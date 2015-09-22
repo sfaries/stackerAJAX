@@ -6,6 +6,14 @@ $(document).ready( function() {
 		var tags = $(this).find("input[name='tags']").val();
 		getUnanswered(tags);
 	});
+
+	$('.inspiration-getter').submit( function(event){
+		// zero out results if previous search and run
+		$('.results').html('');
+		// get the value of the tags the user submitted
+		var tags = $(this).find("input[name='answerers']").val(); //changed from tags to answerers
+		getAnswerer(tags);
+	});
 });
 
 // this function takes the question object returned by StackOverflow 
@@ -88,5 +96,73 @@ var getUnanswered = function(tags) {
 	});
 };
 
+//takes a string of semi-colon separated tags to be searched - ajax get request
+// for on StackOverflow (do they need to be semi-colon or just one tag?)
+var getAnswerer = function(tags) {
+
+	// the parameters we need to pass in our request to StackOverflow's API ////// I thought i needed the same from question, but maybe not...
+	// perhaps the parameters i need are period and tags which is already in the object.
+	var request = {tagged: tags,
+								site: 'stackoverflow',
+								order: 'desc',
+								sort: 'creation'};
+
+	var result = $.ajax({
+		url: "http://api.stackexchange.com/2.2/tags/{tag}/top-answerers/{period}", // /2.2/tags/{tag}/top-answerers/{period}
+		data: request,
+		dataType: "jsonp",
+		type: "GET",
+		})
+	//console.log(result);
+
+	.done(function(result){
+		var searchResults = showSearchResults(request.tagged, result.items.length);
+
+		$('.search-results').html(searchResults);
+
+		$.each(result.items, function(i, item){
+			var answerer = showAnswerer(item);
+			$('.results'). append(answerer);
+		});
+	})
+	.fail(function(jqXHR, error, errorThrown){
+		var errorElem = showError(error);
+		$('.search-results').append(errorElem);
+	});
+	
+};
+
+// this function takes the question object returned by StackOverflow 
+// and creates new result to be appended to DOM
+var showAnswerer = function(answerer) {
+
+	//clone our result template code
+	var result = $('.templates .answerer').clone(); 
+
+	// set the user name in result
+	var name = result.find('.name');
+	name.text(answerer.user.display_name);
+
+	// set the user ID
+	var userId = result.find('.user-id');
+	userId.text(answerer.user.user_id);
+
+	// set the accept rate
+	var acceptRate = result.find('.accept-rate');
+	acceptRate.text(answerer.user.accept_rate);
+
+	// set the link to the user
+	var userLink = result.find('.user-link'); // continue to add the link and href
+	userLink.html('<p>Link: <a target="_blank" href=http://stackoverflow.com/users/' + answerer.user.user_id + ' >' + question.user.display_name + '</a>' + '</p>');
+
+	// set the post count
+	var postCount = result.find('.post-count');
+	postCount.text(answerer.post_count);
+
+	// set the score
+	var score = result.find('.score');
+	score.text(answerer.score);
 
 
+ 	return result;
+};
