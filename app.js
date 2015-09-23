@@ -108,7 +108,7 @@ var getAnswerer = function(tags) {
 								sort: 'creation'};
 
 	var result = $.ajax({
-		url: "http://api.stackexchange.com/2.2/tags/{tag}/top-answerers/{period}", // /2.2/tags/{tag}/top-answerers/{period}
+		url: "http://api.stackexchange.com/2.2/tags/" + tags + "/top-answerers/all_time", // /2.2/tags/{tag}/top-answerers/{period}
 		data: request,
 		dataType: "jsonp",
 		type: "GET",
@@ -116,7 +116,7 @@ var getAnswerer = function(tags) {
 	//console.log(result);
 
 	.done(function(result){
-		var searchResults = showSearchResults(request.tagged, result.items.length);
+		var searchResults = showSearchResults(request.tag, result.items.length);
 
 		$('.search-results').html(searchResults);
 
@@ -129,7 +129,6 @@ var getAnswerer = function(tags) {
 		var errorElem = showError(error);
 		$('.search-results').append(errorElem);
 	});
-	
 };
 
 // this function takes the question object returned by StackOverflow 
@@ -153,7 +152,7 @@ var showAnswerer = function(answerer) {
 
 	// set the link to the user
 	var userLink = result.find('.user-link'); // continue to add the link and href
-	userLink.html('<p>Link: <a target="_blank" href=http://stackoverflow.com/users/' + answerer.user.user_id + ' >' + question.user.display_name + '</a>' + '</p>');
+	userLink.html('<p>Link: <a target="_blank" href=http://stackoverflow.com/users/' + answerer.user.user_id + ' >' + answerer.user.display_name + '</a>' + '</p>');
 
 	// set the post count
 	var postCount = result.find('.post-count');
